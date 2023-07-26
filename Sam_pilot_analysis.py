@@ -8,6 +8,7 @@ Created on Mon Jul 24 13:32:52 2023
 import mne
 import os.path as op
 from mne.preprocessing import maxwell_filter
+from mne.chpi import compute_chpi_amplitudes, compute_chpi_locs, compute_head_pos
 
 path = '/media/mdclarke/a19e7abc-95df-4509-855d-e868f0e34f0f/sam/'
 
@@ -16,7 +17,7 @@ ct = op.join(path, 'ct_sparse.fif')
 fc = op.join(path, 'sss_cal.dat')
 
 # read in raw data
-raw = mne.io.Raw(op.join(path, 'task_pilot1.fif'), preload=True)
+raw = mne.io.Raw(op.join(path, 'pilot_4_task_1_raw.fif'), preload=True)
 
 # make a copy of raw to process
 raw2 = raw.copy()
@@ -25,19 +26,28 @@ raw2 = raw.copy()
 # (I chose 1-40 Hz but you can change this to what you like or skip it)
 raw2.filter(l_freq=1, h_freq=40)
 
-# plot raw data and look for bad channels
+# plot raw data and visually inspect for bad channels
 raw2.plot()
 
 # set bad channels in data structure (you can edit this, it's not final)
-raw2.info['bads'] = ['MEG1132', 'MEG1213', 'MEG2122', 'MEG2633']
+raw2.info['bads'] = ['MEG2122', 'MEG1611']
 
 # filter out the cHPI frequencies - only use this if you don't filter.
 # the lowpass filter will get rid of HPI high frequencies.I commented this step
 # out for now.
 #mne.chpi.filter_chpi(raw)
 
+# setup for movement compensation by extracting coil info
+# (perform on unfiltered raw)
+amps = compute_chpi_amplitudes(raw)
+locs = compute_chpi_locs(raw.info, amps)
+pos = compute_head_pos(raw.info, locs)
+# plot
+mne.viz.plot_head_positions(pos, mode='traces')
+
 # perform tSSS with default params
-tsss = maxwell_filter(raw2, calibration=fc, cross_talk=ct, st_duration=10)
+tsss = maxwell_filter(raw2, calibration=fc, cross_talk=ct, st_duration=10,
+                     head_pos=pos, destination=(0.,0.,0.04))
 
 # find triggers
 events=mne.find_events(tsss, stim_channel='STI101', 
