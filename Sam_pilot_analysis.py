@@ -4,10 +4,6 @@
 Created on Mon Aug 14 09:20:23 2023
 
 @author: maggie
-
-This script will lowpass filter the raw data, apply tSSS, correct for movement and find event triggers.
-The next step will be to use ICA and SSP to suppress physiological artifacts (blinks and heart)
-
 """
 import mne
 import os
@@ -88,11 +84,11 @@ destination = (raw.info['dev_head_t']['trans'][:3, 3])
 
 # perform tSSS - some params for this function will change when running
 # pediatric subjects
-tsss = maxwell_filter(raw_filtered, calibration=fc, cross_talk=ct,
-                         st_duration=10)
 tsss_mc = maxwell_filter(raw_filtered, calibration=fc, cross_talk=ct,
                          st_duration=10, head_pos=pos, 
                          destination=destination)
+tsss_mc.save(op.join(path, '%s' %s, 'meg', '%s_tsss.fif' %c))
+
 # find triggers
 events = mne.find_events(raw, stim_channel='STI101', 
                          shortest_event=1/raw.info['sfreq'])
