@@ -92,8 +92,43 @@ tsss_mc.save(op.join(path, '%s' %s, 'meg', '%s_tsss.fif' %c))
 # find triggers
 events = mne.find_events(raw, stim_channel='STI101', 
                          shortest_event=1/raw.info['sfreq'])
-# plot triggers
+
+# define trigger of interest
+event_dict = {
+  "human": 131,
+  "inan": 121,
+  "god": 111,
+  "super":141
+    }
+
+# plot triggers (events)
 fig = mne.viz.plot_events(
-    events, sfreq=raw.info["sfreq"], 
+    events, event_id=event_dict, sfreq=raw.info["sfreq"], 
     first_samp=raw.first_samp)
 fig.savefig(op.join(path, '%s' %s, 'meg', 'figures', '%s_events' %c))
+
+#reject mags and grads > 9000 fT, 4000 fT/cm
+reject = dict(mag=9000e-15, grad=4000e-13)
+
+# epoch data w respect to event onset
+epochs = mne.Epochs(tsss_mc, events, event_id=event_dict,
+                    tmin=-0.1, tmax=0.5, baseline=(-0.1, 0), 
+                    reject=reject, preload=True)
+# plot epochs
+epochs.plot(events=events)
+
+# plot drop log - this is how many epochs got dropped from the amplitude rejection
+fig = epochs.plot_drop_log()
+fig.savefig(op.join(path, '%s' %s, 'meg', 'figures', '%s_droplog' %c))
+
+# average epoched data
+human = epochs["human"].average()
+inan = epochs["inan"].average()
+god = epochs["god"].average()
+super = epochs["super"].average()
+
+# plot average
+human.plot_joint()
+inan.plot_joint()
+god.plot_joint()
+super.plot_joint()
