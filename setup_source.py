@@ -10,7 +10,7 @@ You must have:
     1) the BEM meshes created from the watershed algoritm
     2) a trans.fif file created from co-registration
     
-Make sure you change all the paths in the code to save files \
+Make sure you change all the paths in the code to save files
     correctly on YOUR local computer
     
 """
