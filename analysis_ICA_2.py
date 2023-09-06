@@ -17,7 +17,6 @@ path = '/home/maggie/data/sam/'
 # setup subject name ### change this for each subject
 s = 'pilot_4'
 c = 'task_1_raw'
-
 ###############################################################################
 
 # read in processed data
@@ -28,9 +27,9 @@ tsss = mne.io.Raw(filename, preload=True)
 # these drifts can affect the accuracy of the ICA algorithm
 filt_tsss = tsss.copy().filter(l_freq=1.0, h_freq=None)
 
-# fit ICA - first 15 is probably good enough to captur blinks/heart as we'd
-# expect these to be pretty strong
-ica = ICA(n_components=15, max_iter="auto", random_state=97)
+# fit ICA - first 12 is probably good enough to capture blinks/eye movements as we'd
+# expect these to be pretty strong signals
+ica = ICA(n_components=12, max_iter="auto", random_state=97)
 ica.fit(filt_tsss)
 ica
 
@@ -39,6 +38,7 @@ ica
 l_freq=1
 h_freq=10
 
+# make a list for bad IC indices
 ica.exclude = []
 # find which ICs match the EOG pattern
 eog_indices, eog_scores = ica.find_bads_eog(tsss, l_freq=l_freq, h_freq=h_freq)
@@ -53,7 +53,7 @@ ica.plot_scores(eog_scores)
 ica.plot_sources(tsss, show_scrollbars=False)
 
 # plot spatial patterns of ICs
-# Again, the second and third component are blinks & eye movements
+# Again, the second and third component resemble blinks & eye movements
 fig = ica.plot_components()
 fig.savefig(op.join(path, '%s' %s, 'figures', '%s_ICs.png' %c))
 
