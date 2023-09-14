@@ -25,6 +25,13 @@ tsss = mne.io.Raw(filename, preload=True)
 events = mne.find_events(tsss, stim_channel='STI101', 
                          shortest_event=1/tsss.info['sfreq'])
 
+adjusted_events = events.copy()
+
+# adjust triggers for visual delay
+t_adjust= -90e-3 #90 ms
+t_adj = int(np.round(t_adjust *raw.info['sfreq']))
+adjusted_events[:,0] += t_adj
+
 # define trigger of interest
 event_dict = {
   "human": 131,
@@ -33,9 +40,9 @@ event_dict = {
   "super":141
     }
 
-# plot triggers (events)
+# plot triggers (adjusted events)
 fig = mne.viz.plot_events(
-    events, event_id=event_dict, sfreq=tsss.info["sfreq"], 
+    adjusted_events, event_id=event_dict, sfreq=tsss.info["sfreq"], 
     first_samp=tsss.first_samp)
 fig.savefig(op.join(path, '%s' %s, 'meg', 'figures', '%s_events' %c))
 
@@ -43,11 +50,11 @@ fig.savefig(op.join(path, '%s' %s, 'meg', 'figures', '%s_events' %c))
 reject = dict(mag=9000e-15, grad=4000e-13)
 
 # epoch data w respect to event onset
-epochs = mne.Epochs(tsss, events, event_id=event_dict,
+epochs = mne.Epochs(tsss, adjusted_events, event_id=event_dict,
                     tmin=-0.1, tmax=0.5, baseline=(-0.1, 0), 
                     reject=reject, preload=True)
 # plot epochs
-epochs.plot(events=events)
+epochs.plot(events=events_adjusted)
 
 # plot drop log - this is how many epochs got dropped from the 
 # amplitude rejection
