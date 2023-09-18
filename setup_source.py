@@ -7,8 +7,9 @@ Created on Fri Sep  1 11:47:54 2023
 
 BEFORE RUNNING
 You must have:
-    1) the BEM meshes created from the watershed algoritm
-    2) a trans.fif file created from co-registration
+    1) The resulting subject folder from Freesurfer's recon-all
+    2) the BEM meshes created from mne.bem.make_watershed_bem
+    3) a trans.fif file created from co-registration
     
 Make sure you change all the paths in the code to save files
     correctly on YOUR local computer
