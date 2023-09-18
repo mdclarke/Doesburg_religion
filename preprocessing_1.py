@@ -50,7 +50,7 @@ del raw, raw2, raw3
 raw = mne.io.Raw(op.join(path, '%s' %s, 
                          '%s_task_all_raw.fif' %s), preload=True)
 
-# make a copy of raw and apply a lowpass filter (55 Hz)
+# make a copy of raw and apply a lowpass filter
 raw_filtered = raw.copy().load_data().filter(l_freq=None, h_freq=55.)
 
 # plot raw data and visually inspect for bad channels
