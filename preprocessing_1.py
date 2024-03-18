@@ -3,15 +3,15 @@
 """
 Created on Mon Aug 14 09:20:23 2023
 
-@author: maggie
+@author: mdclarke@sfu.ca
 
-Append task data files, apply a low-pass filter,
+Append task data files, identify bad channels, apply a low-pass filter,
 perform tSSS & movement compensation
 """
 import mne
 import os
 import os.path as op
-from mne.preprocessing import maxwell_filter, compute_average_dev_head_t
+from mne.preprocessing import maxwell_filter, compute_average_dev_head_t, find_bad_channels_maxwell
 from mne.chpi import (compute_chpi_amplitudes, compute_chpi_locs, 
                       compute_head_pos, write_head_pos)
 
@@ -23,7 +23,7 @@ subjects = ['subject_1', 'subject_2', 'subject_3', 'subject_4',
             'subject_5', 'subject_6', 'subject_7', 'subject_8']
 
 # set to True if headpos has not already been calculated & saved
-calc_headpos = True
+calc_headpos = False
 ###############################################################################
 
 # read in system specific cross-talk and fine calibration files 
@@ -51,16 +51,25 @@ for i in subjects:
   # read in raw data
   raw = mne.io.Raw(op.join(path, '%s' %i, 
                            '%s_task_all_raw.fif' %i), preload=True)
-
+  
+  # automatically detect bad channels
+  raw_check = raw.copy()
+  noisy_chs, flat_chs = find_bad_channels_maxwell(
+    raw_check,
+    cross_talk=ct,
+    calibration=fc,
+    return_scores=True,
+    verbose=True,
+    )
+  print("Noisy channels: ", noisy_chs)
+  print("Flat channels: ", flat_chs)
+  
   # make a copy of raw and apply a lowpass filter
   raw_filtered = raw.copy().load_data().filter(l_freq=None, h_freq=55.)
 
-  # plot raw data and visually inspect for bad channels
-  raw_filtered.plot()
-
   # set bad channels in data structure - get these from 
   # runsheet OR visual inspection
-  raw_filtered.info['bads'] = ['MEG1213', 'MEG1933']
+  raw_filtered.info['bads'] = noisy_chs + flat_chs
 
   # setup for movement compensation by extracting coil info
   # (perform on unfiltered raw)
