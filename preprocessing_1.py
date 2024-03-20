@@ -54,7 +54,7 @@ for i in subjects:
   
   # automatically detect bad channels
   raw_check = raw.copy()
-  noisy_chs, flat_chs = find_bad_channels_maxwell(
+  noisy_chs, flat_chs, scores = find_bad_channels_maxwell(
     raw_check,
     cross_talk=ct,
     calibration=fc,
