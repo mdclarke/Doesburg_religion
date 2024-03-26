@@ -44,7 +44,7 @@ for i in subjects:
   assert round(raw.times.max(), 2) == round(total_times, 2)
 
   # save new combined raw file
-  raw.save(op.join(path, '%s' %i, '%s_task_all_raw.fif' %i))
+  raw.save(op.join(path, '%s' %i, '%s_task_all_raw.fif' %i), overwrite=True)
   # delete old raw objects for memory
   del raw, raw2, raw3
 
@@ -111,4 +111,5 @@ for i in subjects:
                            st_duration=10, head_pos=pos, 
                            destination=destination, st_correlation=0.99)
 
-  tsss_mc.save(op.join(path, '%s' %i, '%s_task_all_tsss.fif' %i))
+  tsss_mc.save(op.join(path, '%s' %i, '%s_task_all_tsss.fif' %i),
+              overwrite=True)
