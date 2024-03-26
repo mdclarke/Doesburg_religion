@@ -23,7 +23,7 @@ subjects = ['subject_1', 'subject_2', 'subject_3', 'subject_4',
             'subject_5', 'subject_6', 'subject_7', 'subject_8']
 
 # set to True if headpos has not already been calculated & saved
-calc_headpos = False
+calc_headpos = True
 ###############################################################################
 
 # read in system specific cross-talk and fine calibration files 
@@ -33,11 +33,11 @@ fc = op.join(path, 'sss_cal.dat')
 for i in subjects:
   # append task runs & save output
   raw = mne.io.Raw(op.join(path, '%s' %i, 
-                           '%s_task_run_1_raw.fif' %i), preload=True)
+                           '%s_task_run1_raw.fif' %i), preload=True)
   raw2 = mne.io.Raw(op.join(path, '%s' %i, 
-                           '%s_task_run_2_raw.fif' %i), preload=True)
+                           '%s_task_run2_raw.fif' %i), preload=True)
   raw3 = mne.io.Raw(op.join(path, '%s' %i, 
-                           '%s_task_run_3_raw.fif' %i), preload=True)
+                           '%s_task_run3_raw.fif' %i), preload=True)
   total_times = raw.times.max() + raw2.times.max() + raw3.times.max()
 
   raw.append([raw2, raw3])
