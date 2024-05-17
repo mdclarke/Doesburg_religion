@@ -6,7 +6,7 @@ Created on Mon Aug 14 09:20:23 2023
 @author: mdclarke@sfu.ca
 
 Append task data files, identify bad channels, apply a low-pass filter,
-perform tSSS & movement compensation
+perform tSSS, eSSS & movement compensation
 """
 import mne
 import os
@@ -15,21 +15,21 @@ from mne.preprocessing import maxwell_filter, compute_average_dev_head_t, find_b
 from mne.chpi import (compute_chpi_amplitudes, compute_chpi_locs, 
                       compute_head_pos, write_head_pos)
 import matplotlib.pyplot as plt
+import yaml
 
 ####### set these  before running #############################################
 path = '/home/maggie/data/sam/'
-
-# make a list of all subject names
-subjects = ['pilot_6']
 
 # set to True if headpos has not already been calculated & saved
 calc_headpos = False
 ###############################################################################
 
+# read in subject names from yaml file
+with open(path / 'subjects.yaml', 'r') as fid:
+    subjects = yaml.load(fid, Loader=yaml.SafeLoader)
 # read in system specific cross-talk and fine calibration files 
 ct = op.join(path, 'ct_sparse.fif')
 fc = op.join(path, 'sss_cal.dat')
-
 for i in subjects:
   # append task runs & save output
   raw = mne.io.Raw(op.join(path, '%s' %i, 
@@ -119,4 +119,5 @@ for i in subjects:
               overwrite=True)
   psd2 = tsss_mc.compute_psd(fmax=50).plot()
   psd2.savefig(op.join(path, '%s' %i, 'figures', '%s_psd_eSSS' %i))
+  plt.close(psd2)
   plt.close(psd2)
