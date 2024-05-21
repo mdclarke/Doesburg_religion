@@ -120,4 +120,3 @@ for i in subjects:
   psd2 = tsss_mc.compute_psd(fmax=50).plot()
   psd2.savefig(op.join(path, '%s' %i, 'figures', '%s_psd_eSSS' %i))
   plt.close(psd2)
-  plt.close(psd2)
