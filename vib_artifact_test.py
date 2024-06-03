@@ -5,6 +5,7 @@ Created on Tue Aug  8 12:43:54 2023
 
 @author: mdclarke@sfu.ca
 
+Append task data & test wether 29.5Hz artifact exists
 """
 import mne
 import os.path as op
@@ -12,7 +13,7 @@ from mne.preprocessing import maxwell_filter
 import matplotlib.pyplot as plt
 import yaml
 
-####### set these  before running #############################################
+####### set this  before running #############################################
 path = '/home/maggie/data/sam/'
 ###############################################################################
 
@@ -33,21 +34,24 @@ for i in subjects:
   total_times = raw.times.max() + raw2.times.max() + raw3.times.max()
   raw.append([raw2, raw3])
   assert round(raw.times.max(), 2) == round(total_times, 2)
+  # save new combined raw file
+  raw.save(op.join(path, '%s' %i, '%s_task_all_raw.fif' %i), overwrite=True)
   # delete old raw objects for memory
   del raw2, raw3
-
+  if not os.path.exists(op.join(path, '%s' %i, 'figures')):
+      os.makedirs(op.join(path, '%s' %i, 'figures'))
+      psd2 = raw.plot_psd(fmax=55)
+  psd2.savefig(op.join(path, '%s' %i, 'figures', '%s_psd_raw' %i))
+  psd2.close(psd)
   # read in erm
-  erm = mne.io.Raw(op.join(path, 'sam', 'empty_room.fif'),
+  erm = mne.io.Raw(op.join(path, '%s' %i, 'empty_room.fif'),
                    preload=True)
-  # apply plain tSSS fopr test purposes
-  tsss = maxwell_filter(raw, calibration=fc, cross_talk=ct,
-                        st_duration=10, st_correlation=0.98)
   psd = erm.plot_psd(fmax=55)
   psd.savefig(op.join(path, '%s' %i, 'figures', '%s_psd_erm' %i))
   plt.close(psd)
-  psd2 = raw.plot_psd(fmax=55)
-  psd2.savefig(op.join(path, '%s' %i, 'figures', '%s_psd_raw' %i))
-  psd2.close(psd)
+  # apply plain tSSS for test purposes
+  tsss = maxwell_filter(raw, calibration=fc, cross_talk=ct,
+                        st_duration=10, st_correlation=0.98)
   psd3 = tsss.plot_psd(fmax=55)
   psd3.savefig(op.join(path, '%s' %i, 'figures', '%s_psd_tsss' %i))
   psd3.close(psd)
