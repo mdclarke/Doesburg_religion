@@ -5,7 +5,7 @@ Created on Mon Aug 14 09:20:23 2023
 
 @author: mdclarke@sfu.ca
 
-Append task data files, identify bad channels, apply a low-pass filter,
+Identify bad channels, apply a low-pass filter,
 perform tSSS, eSSS & movement compensation
 """
 import mne
@@ -27,30 +27,10 @@ calc_headpos = False
 # read in subject names from yaml file
 with open(path / 'subjects.yaml', 'r') as fid:
     subjects = yaml.load(fid, Loader=yaml.SafeLoader)
-# read in system specific cross-talk and fine calibration files 
-ct = op.join(path, 'ct_sparse.fif')
-fc = op.join(path, 'sss_cal.dat')
 for i in subjects:
-  # append task runs & save output
+  # read in raw file
   raw = mne.io.Raw(op.join(path, '%s' %i, 
-                           '%s_task_run1_raw.fif' %i), preload=True)
-  raw2 = mne.io.Raw(op.join(path, '%s' %i, 
-                           '%s_task_run2_raw.fif' %i), preload=True)
-  raw3 = mne.io.Raw(op.join(path, '%s' %i, 
-                           '%s_task_run3_raw.fif' %i), preload=True)
-  total_times = raw.times.max() + raw2.times.max() + raw3.times.max()
-  raw.append([raw2, raw3])
-  assert round(raw.times.max(), 2) == round(total_times, 2)
-  # save new combined raw file
-  raw.save(op.join(path, '%s' %i, '%s_task_all_raw.fif' %i), overwrite=True)
-  # delete old raw objects for memory
-  del raw2, raw3
-  if not os.path.exists(op.join(path, '%s' %i, 'figures')):
-      os.makedirs(op.join(path, '%s' %i, 'figures'))
-  psd = raw.compute_psd(fmax=50).plot()
-  psd.savefig(op.join(path, '%s' %i, 'figures', '%s_psd_raw' %i))
-  plt.close(psd)
-  del raw  
+                           '%s_task_all_raw.fif' %i), preload=True) 
   # read in erm and bandpass the 29.5Hz projector artifact
   erm = mne.io.Raw(op.join(path, '%s' %i, '%s_erm_raw.fif' %i), 
                    preload=True).filter(l_freq=27, h_freq=31)  
@@ -62,9 +42,6 @@ for i in subjects:
   # save plot
   fig.savefig(op.join(path, '%s' %i, 'figures', '%s_29Hz_erm_proj' %i))
   plt.close(fig)
-  # read in raw data
-  raw = mne.io.Raw(op.join(path, '%s' %i, 
-                           '%s_task_all_raw.fif' %i), preload=True) 
   # automatically detect bad channels
   raw_check = raw.copy()
   noisy_chs, flat_chs, scores = find_bad_channels_maxwell(
@@ -117,6 +94,6 @@ for i in subjects:
                            st_correlation=0.99)
   tsss_mc.save(op.join(path, '%s' %i, '%s_task_all_tsss.fif' %i),
               overwrite=True)
-  psd2 = tsss_mc.compute_psd(fmax=50).plot()
-  psd2.savefig(op.join(path, '%s' %i, 'figures', '%s_psd_eSSS' %i))
+  psd = tsss_mc.compute_psd(fmax=50).plot()
+  psd.savefig(op.join(path, '%s' %i, 'figures', '%s_psd_eSSS_mc' %i))
   plt.close(psd2)
