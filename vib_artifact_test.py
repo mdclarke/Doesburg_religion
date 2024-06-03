@@ -47,10 +47,10 @@ for i in subjects:
   plt.close(psd)
   psd2 = raw.plot_psd(fmax=55)
   psd2.savefig(op.join(path, '%s' %i, 'figures', '%s_psd_raw' %i))
-  plt2.close(psd)
+  psd2.close(psd)
   psd3 = tsss.plot_psd(fmax=55)
   psd3.savefig(op.join(path, '%s' %i, 'figures', '%s_psd_tsss' %i))
-  plt3.close(psd)
+  psd3.close(psd)
   # create proj in erm around 29.5Hz artifact
   filt_erm = erm.copy().filter(l_freq=27, h_freq=31)
   ## compute erm projectors to use for eSSS
