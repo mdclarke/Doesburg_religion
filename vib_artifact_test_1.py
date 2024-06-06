@@ -8,6 +8,7 @@ Created on Tue Aug  8 12:43:54 2023
 Append task data & test wether 29.5Hz artifact exists
 """
 import mne
+import os
 import os.path as op
 from mne.preprocessing import maxwell_filter
 import matplotlib.pyplot as plt
