@@ -3,7 +3,7 @@
 """
 Created on Fri Sep  1 11:47:54 2023
 
-@author: maggie
+@author: mdclarke@sfu.ca
 
 BEFORE RUNNING
 You must have:
@@ -12,23 +12,23 @@ You must have:
     3) a trans.fif file created from co-registration
     
 Make sure you change all the paths in the code to save files
-    correctly on YOUR local computer
+correctly on YOUR local computer
     
 """
 import mne
 import os.path as op
 
-########### change this path and subject ID ##########
-
+########### change paths and subject ID ##########
 # define subjects_dir (where freesurfer subjects folder is) and subject number
 subjects_dir = '/usr/local/freesurfer/subjects'
+data_dir = '/home/mdclarke/data/sam/'
 subject = "sub-01"
-
 ######################################################
 
 # make boundary element model (BEM) model & solution 
 # this defines the boundary of magnetic sources from the sensors
-model = mne.make_bem_model(subject=subject, ico=4, conductivity=(0.3,),
+# use single layer for MEG only
+model = mne.make_bem_model(subject=subject, ico=4, conductivity=(0.3),
                            subjects_dir=subjects_dir)
 bem_sol = mne.make_bem_solution(model)
 
@@ -43,9 +43,10 @@ mne.viz.plot_bem(subject=subject, subjects_dir=subjects_dir)
 trans = mne.read_trans(op.join(subjects_dir, "%s" %subject, 
                                '%s-trans.fif' %subject))
 # read in raw MEG file
-info = mne.io.read_info('/home/mdclarke/data/sub-01/sub-01_task1_raw.fif')
+info = mne.io.read_info(op.join(data_dir, subject, 
+                                '%s_task_run1_raw.fif' %subject)
                         
-# plot alignment (coregistration)
+# plot alignment (co-registration)
 mne.viz.plot_alignment(
     info,
     trans,
@@ -64,11 +65,11 @@ print(src)
 src.plot(subjects_dir=subjects_dir)
 
 # save your source space file
-src.save(op.join(subjects_dir, "%s" %subject, 'bem', 
+src.save(op.join(subjects_dir, '%s' %subject, 'bem', 
                                '%s-oct-6-src.fif' %subject))
 
 # plot source space inside BEM
 mne.viz.plot_bem(src=src, subject=subject, subjects_dir=subjects_dir)
 
-### the next steps here are to create a forward model and an inverse model, 
+### the next steps are to create a forward model and an inverse model, 
 ### for these steps you will need the fully-processed MEG data
